@@ -17,11 +17,22 @@ app.use(
 );
 
 // ─── Security: CORS ───────────────────────────────────────────────────────────
-// Allows only same-origin in production. Adjust ALLOWED_ORIGIN env var as needed.
-const allowedOrigin = process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
+// ALLOWED_ORIGINS accepts a comma-separated list of allowed origins so that
+// local dev, Render, and Vercel can all coexist without changing code.
+// Example: http://localhost:3000,https://leadflow.vercel.app,https://x.onrender.com
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000')
+  .split(',')
+  .map(o => o.trim())
+  .filter(Boolean);
+
 app.use(
   cors({
-    origin: allowedOrigin,
+    origin: (incomingOrigin, callback) => {
+      // Allow server-to-server requests (e.g. curl, Postman) that have no Origin header
+      if (!incomingOrigin) return callback(null, true);
+      if (allowedOrigins.includes(incomingOrigin)) return callback(null, true);
+      callback(new Error(`CORS: origin '${incomingOrigin}' is not allowed`));
+    },
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type'],
     credentials: false,
