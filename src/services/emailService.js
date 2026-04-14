@@ -1,5 +1,10 @@
 const nodemailer = require('nodemailer');
-const logger = require('../utils/logger');
+const dns      = require('dns');
+const logger   = require('../utils/logger');
+
+// Force IPv4 globally — prevents ENETUNREACH on Render where Gmail's
+// IPv6 addresses (2607:f8b0:...) are unreachable from the host network.
+dns.setDefaultResultOrder('ipv4first');
 
 /**
  * Email Service
@@ -24,12 +29,13 @@ function getTransporter() {
   }
 
   transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,               // SSL on port 465 — more stable than STARTTLS 587 on Render
-    connectionTimeout: 10000,  // 10 s — fail fast instead of hanging
-    greetingTimeout:   10000,
-    socketTimeout:     10000,
+    host:    'smtp.gmail.com',
+    port:    465,
+    secure:  true,   // SSL — required for port 465
+    family:  4,      // ← CRITICAL: force IPv4 socket, bypass IPv6 (ENETUNREACH fix)
+    connectionTimeout: 10_000, // 10 s — fail fast, don't hang on Render
+    greetingTimeout:   10_000,
+    socketTimeout:     10_000,
     auth: {
       user: process.env.EMAIL_USER.trim(),
       // Gmail App Passwords may contain spaces in .env — trim them
@@ -40,14 +46,11 @@ function getTransporter() {
     },
   });
 
-  // Verify connection at startup — logs result but never crashes the process
-  transporter.verify((err) => {
-    if (err) {
-      logger.warn('EmailService', 'SMTP connection verify failed', err.message);
-    } else {
-      logger.success('EmailService', 'SMTP ready — Gmail connection verified');
-    }
-  });
+  // Verify SMTP connection at startup.
+  // Logs outcome but never crashes the process — server stays up even if SMTP is misconfigured.
+  transporter.verify()
+    .then(() => logger.success('EmailService', 'SMTP ready ✓ — Gmail IPv4 connection verified'))
+    .catch((err) => logger.warn('EmailService', `SMTP verify failed: ${err.message}`));
 
   return transporter;
 }
