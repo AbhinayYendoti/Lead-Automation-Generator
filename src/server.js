@@ -6,6 +6,11 @@
  * Handles unhandled rejections and uncaught exceptions gracefully.
  */
 
+// ─── IPv4 First (MUST be before any network calls) ───────────────────────────
+// Render's network sometimes routes Gmail SMTP through IPv6 (2607:f8b0:...)
+// which causes ENETUNREACH. Forcing ipv4first resolves this reliably.
+require('dns').setDefaultResultOrder('ipv4first');
+
 // Must be first — loads .env before any other module reads process.env
 require('dotenv').config();
 

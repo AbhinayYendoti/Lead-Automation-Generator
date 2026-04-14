@@ -9,6 +9,11 @@ const logger = require('./utils/logger');
 
 const app = express();
 
+// ─── Trust Proxy (required on Render / Heroku / any reverse-proxy host) ───────
+// Allows Express to read the real client IP from X-Forwarded-For header.
+// Without this, rate-limit counts all traffic as coming from the proxy IP.
+app.set('trust proxy', 1);
+
 // ─── Security: HTTP Headers ───────────────────────────────────────────────────
 app.use(
   helmet({

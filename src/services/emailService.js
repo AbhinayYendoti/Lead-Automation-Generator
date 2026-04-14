@@ -11,7 +11,9 @@ const logger = require('../utils/logger');
 let transporter = null;
 
 /**
- * Lazily create the SMTP transporter once.
+ * Build and cache the SMTP transporter.
+ * Uses explicit host + port 465 (SSL) instead of `service:'gmail'`
+ * for reliable operation on Render (avoids IPv6 routing issues).
  * Throws if credentials are missing.
  */
 function getTransporter() {
@@ -22,16 +24,29 @@ function getTransporter() {
   }
 
   transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,               // SSL on port 465 — more stable than STARTTLS 587 on Render
+    connectionTimeout: 10000,  // 10 s — fail fast instead of hanging
+    greetingTimeout:   10000,
+    socketTimeout:     10000,
     auth: {
       user: process.env.EMAIL_USER.trim(),
       // Gmail App Passwords may contain spaces in .env — trim them
       pass: process.env.EMAIL_PASS.trim(),
     },
-    secure: false,
     tls: {
       rejectUnauthorized: true,
     },
+  });
+
+  // Verify connection at startup — logs result but never crashes the process
+  transporter.verify((err) => {
+    if (err) {
+      logger.warn('EmailService', 'SMTP connection verify failed', err.message);
+    } else {
+      logger.success('EmailService', 'SMTP ready — Gmail connection verified');
+    }
   });
 
   return transporter;
@@ -166,8 +181,15 @@ async function sendLeadEmail(lead, overrideTo, isTestMode) {
     html,
   };
 
-  await transport.sendMail(mailOptions);
-  logger.success('EmailService', `Email sent to ${isTestMode ? 'test address' : 'system'}: ${recipient}`);
+  try {
+    await transport.sendMail(mailOptions);
+    logger.success('EmailService', `Email sent to ${isTestMode ? 'test address' : 'system'}: ${recipient}`);
+  } catch (err) {
+    // Reset cached transporter so the next request gets a fresh connection
+    transporter = null;
+    logger.error('EmailService', 'sendMail failed', err.message);
+    throw err;   // Re-throw so the controller can mark email as 'failed'
+  }
 }
 
 module.exports = { sendLeadEmail };
