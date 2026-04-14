@@ -19,25 +19,33 @@ app.use(
 // ─── Security: CORS ───────────────────────────────────────────────────────────
 // ALLOWED_ORIGINS accepts a comma-separated list of allowed origins so that
 // local dev, Render, and Vercel can all coexist without changing code.
-// Example: http://localhost:3000,https://leadflow.vercel.app,https://x.onrender.com
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000')
+// Set this env var on Render dashboard:
+//   http://localhost:3000,https://lead-automation-generator.onrender.com,https://lead-automation-generator.vercel.app
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || [
+  'http://localhost:3000',
+  'https://lead-automation-generator.onrender.com',
+  'https://lead-automation-generator.vercel.app',
+].join(','))
   .split(',')
   .map(o => o.trim())
   .filter(Boolean);
 
-app.use(
-  cors({
-    origin: (incomingOrigin, callback) => {
-      // Allow server-to-server requests (e.g. curl, Postman) that have no Origin header
-      if (!incomingOrigin) return callback(null, true);
-      if (allowedOrigins.includes(incomingOrigin)) return callback(null, true);
-      callback(new Error(`CORS: origin '${incomingOrigin}' is not allowed`));
-    },
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type'],
-    credentials: false,
-  })
-);
+const corsOptions = {
+  origin: (incomingOrigin, callback) => {
+    // Allow server-to-server / curl / Postman (no Origin header)
+    if (!incomingOrigin) return callback(null, true);
+    if (allowedOrigins.includes(incomingOrigin)) return callback(null, true);
+    callback(new Error(`CORS: origin '${incomingOrigin}' is not allowed`));
+  },
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type'],
+  credentials: false,
+};
+
+// Handle preflight OPTIONS requests for ALL routes (required by browsers)
+app.options('*', cors(corsOptions));
+app.use(cors(corsOptions));
+
 
 // ─── Security: Rate Limiting ──────────────────────────────────────────────────
 const apiLimiter = rateLimit({
