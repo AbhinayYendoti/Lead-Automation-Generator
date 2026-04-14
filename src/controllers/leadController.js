@@ -73,10 +73,17 @@ async function createLead(req, res) {
   // ── Step 3: Dispatch Notifications ────────────────────────────────────────
   // Promise.allSettled guarantees both fire and partial failures don't crash the request.
   // WhatsApp or email failure → reported in response, never masked as success.
+  logger.info('LeadController', 'Dispatching notifications (WhatsApp + Email)...');
+
   const [waResult, emailResult] = await Promise.allSettled([
     sendWhatsAppMessage(savedLead, isTestMode ? testPhone : undefined),
     sendLeadEmail(savedLead, isTestMode ? testEmail : undefined, isTestMode),
   ]);
+
+  logger.info('LeadController', [
+    `WhatsApp: ${waResult.status}`,
+    `Email: ${emailResult.status}`,
+  ].join(' | '));
 
   const notificationStatus = {
     whatsapp: waResult.status    === 'fulfilled' ? 'sent' : 'failed',
@@ -84,10 +91,12 @@ async function createLead(req, res) {
   };
 
   if (waResult.status === 'rejected') {
-    logger.error('LeadController', 'WhatsApp failed', waResult.reason);
+    logger.error('LeadController', `WhatsApp FAILED: ${waResult.reason?.message || waResult.reason}`);
+    if (waResult.reason?.stack) logger.error('LeadController', waResult.reason.stack);
   }
   if (emailResult.status === 'rejected') {
-    logger.error('LeadController', 'Email failed', emailResult.reason);
+    logger.error('LeadController', `Email FAILED: ${emailResult.reason?.message || emailResult.reason}`);
+    if (emailResult.reason?.stack) logger.error('LeadController', emailResult.reason.stack);
   }
 
   // ── Step 4: Structured Response ───────────────────────────────────────────
