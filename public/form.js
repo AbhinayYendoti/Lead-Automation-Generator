@@ -1,6 +1,11 @@
 (() => {
   'use strict';
 
+  // ── API Base URL ─────────────────────────────────────────────────────────────
+  // Production Render backend. Change to '' if frontend and backend are
+  // served from the same origin (same Express instance).
+  const API_BASE = 'https://lead-automation-generator.onrender.com';
+
   // ── DOM Refs ────────────────────────────────────────────────────────────────
   const form            = document.getElementById('leadForm');
   const submitBtn       = document.getElementById('submitBtn');
@@ -436,7 +441,7 @@
     }
 
     // Fire API call immediately (do not await here)
-    const apiCall = fetch('/lead', {
+    const apiCall = fetch(`${API_BASE}/lead`, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify(payload),
