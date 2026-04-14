@@ -1,0 +1,1685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LeadFlow — CRM Automation Platform</title>
+  <meta name="description" content="LeadFlow enterprise CRM automation. Submit a lead and experience real-time processing, intelligent priority assignment, and instant multi-channel notifications." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ─────────────────────────────────────────────
+       DESIGN TOKENS
+    ───────────────────────────────────────────── */
+    :root {
+      --bg-base:        #080C14;
+      --bg-surface:     #0D1321;
+      --bg-elevated:    #111827;
+      --bg-card:        #131C2E;
+      --bg-card-hover:  #162035;
+      --bg-input:       #0D1321;
+      --bg-input-focus: #0F1729;
+
+      --border-subtle:  rgba(255,255,255,0.06);
+      --border-default: rgba(255,255,255,0.09);
+      --border-focus:   rgba(99,155,255,0.55);
+      --border-error:   rgba(248, 81, 73, 0.6);
+
+      --accent-primary:    #3B82F6;
+      --accent-primary-h:  #2563EB;
+      --accent-glow:       rgba(59,130,246,0.18);
+      --accent-glow-soft:  rgba(59,130,246,0.08);
+
+      --text-primary:   #F0F4FF;
+      --text-secondary: #8B98B4;
+      --text-tertiary:  #566175;
+      --text-accent:    #60A5FA;
+
+      --success:        #10B981;
+      --success-bg:     rgba(16,185,129,0.1);
+      --success-border: rgba(16,185,129,0.25);
+
+      --warning:        #F59E0B;
+      --warning-bg:     rgba(245,158,11,0.1);
+      --warning-border: rgba(245,158,11,0.25);
+
+      --error:          #F87171;
+      --error-bg:       rgba(248,113,113,0.08);
+      --error-border:   rgba(248,113,113,0.3);
+
+      --priority-high:    #FB7185;
+      --priority-high-bg: rgba(251,113,133,0.1);
+      --priority-med:     #FBBF24;
+      --priority-med-bg:  rgba(251,191,36,0.1);
+      --priority-low:     #60A5FA;
+      --priority-low-bg:  rgba(96,165,250,0.1);
+
+      --radius-sm:  6px;
+      --radius-md:  10px;
+      --radius-lg:  14px;
+      --radius-xl:  18px;
+      --radius-full: 9999px;
+
+      --shadow-card:  0 1px 3px rgba(0,0,0,0.4), 0 8px 32px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.05);
+      --shadow-input: 0 2px 8px rgba(0,0,0,0.3);
+
+      --transition-fast: 0.12s cubic-bezier(0.4,0,0.2,1);
+      --transition-base: 0.2s cubic-bezier(0.4,0,0.2,1);
+      --transition-slow: 0.35s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* ─────────────────────────────────────────────
+       RESET & BASE
+    ───────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg-base);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 16px 64px;
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Ambient glow background effect */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 900px;
+      height: 500px;
+      background: radial-gradient(ellipse at center, rgba(59,130,246,0.07) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -10%;
+      left: 20%;
+      width: 600px;
+      height: 400px;
+      background: radial-gradient(ellipse at center, rgba(99,102,241,0.04) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ─────────────────────────────────────────────
+       LAYOUT SHELL
+    ───────────────────────────────────────────── */
+    .shell {
+      width: 100%;
+      max-width: 560px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ─────────────────────────────────────────────
+       TOP BAR
+    ───────────────────────────────────────────── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+      padding: 0 2px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 0 1px rgba(59,130,246,0.4), 0 4px 16px rgba(59,130,246,0.25);
+      flex-shrink: 0;
+    }
+
+    .brand-icon svg { display: block; }
+
+    .brand-wordmark {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .brand-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.4px;
+      line-height: 1;
+    }
+
+    .brand-name span { color: #60A5FA; }
+
+    .brand-sub {
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--success);
+      background: var(--success-bg);
+      border: 1px solid var(--success-border);
+      border-radius: var(--radius-full);
+      padding: 5px 11px 5px 8px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--success);
+      border-radius: 50%;
+      animation: breathe 2.5s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes breathe {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    /* ─────────────────────────────────────────────
+       MAIN CARD
+    ───────────────────────────────────────────── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Subtle top highlight */
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 30%, rgba(255,255,255,0.12) 70%, transparent 100%);
+      pointer-events: none;
+    }
+
+    /* ─────────────────────────────────────────────
+       CARD HEADER
+    ───────────────────────────────────────────── */
+    .card-header {
+      padding: 26px 28px 22px;
+      border-bottom: 1px solid var(--border-subtle);
+      position: relative;
+    }
+
+    .card-header-inner {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .card-header-text { flex: 1; }
+
+    .card-eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-accent);
+      margin-bottom: 8px;
+    }
+
+    .card-eyebrow-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--accent-primary);
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+      margin-bottom: 6px;
+    }
+
+    .card-subtitle {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      font-weight: 400;
+    }
+
+    .step-counter {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+
+    .step-counter-num {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .step-counter-label {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* ─────────────────────────────────────────────
+       PROGRESS BAR (form fill indicator)
+    ───────────────────────────────────────────── */
+    .form-progress-bar {
+      height: 2px;
+      background: var(--border-subtle);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .form-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-primary) 0%, #818CF8 100%);
+      width: 0%;
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 0 2px 2px 0;
+    }
+
+    /* ─────────────────────────────────────────────
+       FORM BODY
+    ───────────────────────────────────────────── */
+    .card-body { padding: 26px 28px 26px; }
+
+    .form-section {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+
+    .form-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      letter-spacing: 0.2px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .req {
+      color: var(--error);
+      font-size: 11px;
+      line-height: 1;
+    }
+
+    /* Input wrapper for icon support */
+    .input-wrap {
+      position: relative;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-tertiary);
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      transition: color var(--transition-base);
+    }
+
+    .input-icon svg { display: block; }
+
+    .form-input, .form-select {
+      width: 100%;
+      padding: 10px 12px 10px 36px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-md);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 13.5px;
+      font-weight: 400;
+      color: var(--text-primary);
+      outline: none;
+      transition:
+        border-color var(--transition-base),
+        box-shadow var(--transition-base),
+        background var(--transition-base);
+      -webkit-appearance: none;
+    }
+
+    .form-input::placeholder { color: var(--text-tertiary); }
+
+    .form-input:hover, .form-select:hover {
+      border-color: rgba(255,255,255,0.14);
+    }
+
+    .form-input:focus, .form-select:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.12), 0 2px 8px rgba(0,0,0,0.3);
+      background: var(--bg-input-focus);
+    }
+
+    .form-input:focus + .input-icon,
+    .input-wrap:focus-within .input-icon {
+      color: var(--accent-primary);
+    }
+
+    .form-input.input-error, .form-select.input-error {
+      border-color: var(--border-error);
+      box-shadow: 0 0 0 3px rgba(248,113,113,0.1);
+    }
+
+    /* Select has custom arrow */
+    .form-select {
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%23566175' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 32px;
+    }
+
+    .form-select option, .form-select optgroup {
+      background: #1a2332;
+      color: var(--text-primary);
+    }
+
+    .field-error {
+      font-size: 11.5px;
+      color: var(--error);
+      display: none;
+      align-items: center;
+      gap: 4px;
+      font-weight: 500;
+    }
+
+    .field-error.visible { display: flex; }
+
+    /* ─────────────────────────────────────────────
+       SECTION DIVIDER
+    ───────────────────────────────────────────── */
+    .section-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 4px 0;
+    }
+
+    .section-divider-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border-subtle);
+    }
+
+    .section-divider-text {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      white-space: nowrap;
+    }
+
+    /* ─────────────────────────────────────────────
+       LIVE TEST MODE BLOCK
+    ───────────────────────────────────────────── */
+    .test-mode-block {
+      background: linear-gradient(135deg, rgba(99,102,241,0.04) 0%, rgba(59,130,246,0.04) 100%);
+      border: 1px solid rgba(99,102,241,0.18);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: border-color var(--transition-base);
+    }
+
+    .test-mode-block.is-active {
+      border-color: rgba(99,102,241,0.35);
+      background: linear-gradient(135deg, rgba(99,102,241,0.07) 0%, rgba(59,130,246,0.06) 100%);
+    }
+
+    .test-mode-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      cursor: pointer;
+      user-select: none;
+      gap: 12px;
+    }
+
+    .test-mode-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .test-mode-icon-wrap {
+      width: 36px;
+      height: 36px;
+      background: rgba(99,102,241,0.12);
+      border: 1px solid rgba(99,102,241,0.2);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background var(--transition-base), border-color var(--transition-base);
+    }
+
+    .test-mode-block.is-active .test-mode-icon-wrap {
+      background: rgba(99,102,241,0.2);
+      border-color: rgba(99,102,241,0.4);
+    }
+
+    .test-mode-icon-wrap svg { display: block; }
+
+    .test-mode-text { flex: 1; }
+
+    .test-mode-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1;
+      margin-bottom: 3px;
+    }
+
+    .test-mode-desc {
+      font-size: 11.5px;
+      color: var(--text-tertiary);
+      line-height: 1.4;
+    }
+
+    /* ── Toggle Switch ── */
+    .toggle {
+      position: relative;
+      width: 42px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+
+    .toggle-track {
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: var(--radius-full);
+      transition: background var(--transition-base), border-color var(--transition-base);
+      cursor: pointer;
+    }
+
+    .toggle-thumb {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 16px;
+      height: 16px;
+      background: #fff;
+      border-radius: 50%;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+      transition: transform var(--transition-base);
+    }
+
+    .toggle input:checked ~ .toggle-track {
+      background: linear-gradient(135deg, #6366F1 0%, #3B82F6 100%);
+      border-color: transparent;
+    }
+
+    .toggle input:checked ~ .toggle-track .toggle-thumb {
+      transform: translateX(18px);
+    }
+
+    .toggle input:focus-visible ~ .toggle-track {
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.3);
+    }
+
+    /* ── Test Mode Revealed Fields ── */
+    .test-mode-fields {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.38s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease;
+      opacity: 0;
+    }
+
+    .test-mode-fields.visible {
+      max-height: 280px;
+      opacity: 1;
+    }
+
+    .test-mode-fields-inner {
+      padding: 0 16px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .test-mode-callout {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      background: rgba(99,102,241,0.08);
+      border: 1px solid rgba(99,102,241,0.2);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+    }
+
+    .test-mode-callout svg { flex-shrink: 0; margin-top: 1px; }
+
+    .test-mode-callout-text {
+      font-size: 12px;
+      color: #A5B4FC;
+      line-height: 1.55;
+    }
+
+    .test-mode-callout-text strong {
+      color: #C7D2FE;
+      font-weight: 600;
+    }
+
+    /* ─────────────────────────────────────────────
+       SUBMIT BUTTON
+    ───────────────────────────────────────────── */
+    .btn-submit {
+      width: 100%;
+      padding: 13px 20px;
+      background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-md);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      letter-spacing: -0.1px;
+      position: relative;
+      overflow: hidden;
+      transition:
+        transform var(--transition-fast),
+        box-shadow var(--transition-base),
+        opacity var(--transition-base);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 4px 16px rgba(59,130,246,0.3);
+    }
+
+    .btn-submit::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 100%);
+      pointer-events: none;
+    }
+
+    .btn-submit:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3), 0 8px 24px rgba(59,130,246,0.4);
+    }
+
+    .btn-submit:active:not(:disabled) {
+      transform: translateY(0) scale(0.99);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 2px 8px rgba(59,130,246,0.25);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+
+    .btn-submit svg { flex-shrink: 0; transition: transform var(--transition-base); }
+    .btn-submit:hover:not(:disabled) svg { transform: translateX(2px); }
+
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.25);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─────────────────────────────────────────────
+       WORKFLOW STEPPER
+    ───────────────────────────────────────────── */
+    #workflowBox {
+      display: none;
+      margin-top: 24px;
+    }
+
+    .workflow-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .workflow-card-header {
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .workflow-card-title {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+    }
+
+    .workflow-processing-badge {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent-primary);
+      background: var(--accent-glow-soft);
+      border: 1px solid rgba(59,130,246,0.2);
+      border-radius: var(--radius-full);
+      padding: 3px 8px;
+    }
+
+    .workflow-processing-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--accent-primary);
+      animation: breathe 1.2s ease-in-out infinite;
+    }
+
+    .workflow-steps {
+      padding: 8px 16px 12px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 10px 0;
+      position: relative;
+    }
+
+    /* Connector line */
+    .step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 15px;
+      top: 38px;
+      width: 1px;
+      height: calc(100% - 18px);
+      background: var(--border-subtle);
+      transition: background 0.4s ease;
+    }
+
+    .step.done:not(:last-child)::after { background: rgba(16,185,129,0.3); }
+    .step.active:not(:last-child)::after { background: rgba(59,130,246,0.2); }
+
+    /* Step node */
+    .step-node {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--bg-surface);
+      border: 1.5px solid var(--border-default);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+      transition:
+        border-color 0.3s ease,
+        background 0.3s ease,
+        box-shadow 0.3s ease;
+    }
+
+    .step.active .step-node {
+      border-color: var(--accent-primary);
+      background: rgba(59,130,246,0.08);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+    }
+
+    .step.done .step-node {
+      border-color: var(--success);
+      background: var(--success-bg);
+    }
+
+    .step-num {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-tertiary);
+      font-variant-numeric: tabular-nums;
+      transition: opacity 0.2s;
+    }
+
+    .step.active .step-num,
+    .step.done .step-num { display: none; }
+
+    .step-ring {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      border: 2px solid var(--accent-primary);
+      display: none;
+    }
+
+    .step-ring::after {
+      content: '';
+      display: block;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--accent-primary);
+      margin: 2px auto 0;
+      animation: ring-pulse 1.2s ease-in-out infinite;
+    }
+
+    @keyframes ring-pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.3; transform: scale(0.5); }
+    }
+
+    .step.active .step-ring { display: block; }
+
+    .step-check-icon {
+      display: none;
+      color: var(--success);
+    }
+
+    .step-check-icon svg { display: block; }
+    .step.done .step-check-icon { display: block; }
+
+    .step-content {
+      padding-top: 6px;
+      flex: 1;
+    }
+
+    .step-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      line-height: 1;
+      transition: color 0.3s ease;
+      margin-bottom: 2px;
+    }
+
+    .step.active .step-title { color: var(--text-accent); }
+    .step.done .step-title { color: var(--success); }
+
+    .step-detail {
+      font-size: 11.5px;
+      color: var(--text-tertiary);
+      display: none;
+      transition: color 0.3s;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .step.active .step-detail,
+    .step.done .step-detail { display: block; color: var(--text-secondary); }
+
+    .step-time {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      padding-top: 8px;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .step.done .step-time { opacity: 1; }
+
+    /* ─────────────────────────────────────────────
+       RESULT / RESPONSE CARD
+    ───────────────────────────────────────────── */
+    #responseBox { display: none; margin-top: 24px; }
+
+    #responseBox.animate-in {
+      animation: slide-up 0.4s cubic-bezier(0.2, 0, 0, 1) both;
+    }
+
+    @keyframes slide-up {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    /* ── Success Result ── */
+    .result-success-bar {
+      height: 3px;
+      background: linear-gradient(90deg, var(--success) 0%, #34D399 100%);
+    }
+
+    .result-header {
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .result-icon {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .result-icon.success {
+      background: var(--success-bg);
+      border: 1px solid var(--success-border);
+      color: var(--success);
+    }
+
+    .result-icon.error {
+      background: var(--error-bg);
+      border: 1px solid var(--error-border);
+      color: var(--error);
+    }
+
+    .result-icon svg { display: block; }
+
+    .result-header-text { flex: 1; }
+
+    .result-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 3px;
+    }
+
+    .result-lead-id {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.5px;
+    }
+
+    .result-timestamp {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      font-weight: 400;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    /* Data Grid */
+    .result-grid {
+      padding: 4px 0;
+    }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 9px 18px;
+      gap: 16px;
+      transition: background var(--transition-fast);
+    }
+
+    .result-row:hover { background: rgba(255,255,255,0.02); }
+
+    .result-row + .result-row {
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .result-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      flex-shrink: 0;
+    }
+
+    .result-value {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-align: right;
+      word-break: break-all;
+    }
+
+    /* Priority badges */
+    .priority-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px 3px 7px;
+      border-radius: var(--radius-full);
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .priority-badge-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+    }
+
+    .priority-high {
+      background: var(--priority-high-bg);
+      color: var(--priority-high);
+      border: 1px solid rgba(251,113,133,0.25);
+    }
+
+    .priority-high .priority-badge-dot { background: var(--priority-high); }
+
+    .priority-medium {
+      background: var(--priority-med-bg);
+      color: var(--priority-med);
+      border: 1px solid rgba(251,191,36,0.25);
+    }
+
+    .priority-medium .priority-badge-dot { background: var(--priority-med); }
+
+    .priority-low {
+      background: var(--priority-low-bg);
+      color: var(--priority-low);
+      border: 1px solid rgba(96,165,250,0.25);
+    }
+
+    .priority-low .priority-badge-dot { background: var(--priority-low); }
+
+    /* Notification status row */
+    .notif-section {
+      padding: 12px 18px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      gap: 10px;
+    }
+
+    .notif-chip {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 9px 12px;
+    }
+
+    .notif-chip-icon {
+      width: 28px; height: 28px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .notif-chip-icon.sent {
+      background: var(--success-bg);
+      color: var(--success);
+    }
+
+    .notif-chip-icon.failed {
+      background: var(--error-bg);
+      color: var(--error);
+    }
+
+    .notif-chip-icon svg { display: block; }
+
+    .notif-chip-text { flex: 1; }
+
+    .notif-chip-name {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+
+    .notif-chip-status {
+      font-size: 10.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .notif-chip-status.sent { color: var(--success); }
+    .notif-chip-status.failed { color: var(--error); }
+
+    /* Live test mode delivered-to banner */
+    .delivered-banner {
+      margin: 0 18px 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      background: rgba(245,158,11,0.06);
+      border: 1px solid var(--warning-border);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+    }
+
+    .delivered-banner svg { flex-shrink: 0; margin-top: 1px; color: var(--warning); }
+
+    .delivered-banner-text {
+      font-size: 12px;
+      color: #D97706;
+      line-height: 1.55;
+    }
+
+    .delivered-banner-text strong { font-weight: 600; color: #FBBF24; }
+
+    /* Error state */
+    .error-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--error-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .error-top-bar {
+      height: 3px;
+      background: linear-gradient(90deg, var(--error) 0%, #FCA5A5 100%);
+    }
+
+    .error-body {
+      padding: 18px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .error-icon-wrap {
+      width: 36px; height: 36px;
+      background: var(--error-bg);
+      border: 1px solid var(--error-border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--error);
+    }
+
+    .error-icon-wrap svg { display: block; }
+
+    .error-text-wrap { flex: 1; }
+
+    .error-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--error);
+      margin-bottom: 4px;
+    }
+
+    .error-detail {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.55;
+    }
+
+    /* ─────────────────────────────────────────────
+       FOOTER
+    ───────────────────────────────────────────── */
+    .footer {
+      margin-top: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 0 4px;
+    }
+
+    .footer-text {
+      font-size: 11.5px;
+      color: var(--text-tertiary);
+    }
+
+    .footer-text strong { color: var(--text-secondary); font-weight: 600; }
+
+    .footer-sep {
+      width: 3px; height: 3px;
+      border-radius: 50%;
+      background: var(--text-tertiary);
+      opacity: 0.4;
+    }
+
+    /* ─────────────────────────────────────────────
+       RESPONSIVE
+    ───────────────────────────────────────────── */
+    /* ── Field Muted State (Test Mode active) ── */
+    .form-group.field-muted .form-label { color: var(--text-tertiary); }
+
+    .form-group.field-muted .form-input {
+      opacity: 0.38;
+      cursor: not-allowed;
+      border-color: var(--border-subtle);
+      background: var(--bg-surface);
+      color: var(--text-tertiary);
+    }
+
+    .form-group.field-muted .form-input:hover {
+      border-color: var(--border-subtle);
+    }
+
+    .form-group.field-muted .form-input:focus {
+      border-color: var(--border-subtle);
+      box-shadow: none;
+    }
+
+    .form-group.field-muted .input-icon {
+      opacity: 0.3;
+    }
+
+    .muted-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-full);
+      padding: 2px 7px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-left: auto;
+      opacity: 0;
+      transition: opacity var(--transition-base);
+    }
+
+    .field-muted .muted-badge { opacity: 1; }
+
+    @media (max-width: 560px) {
+      body { padding: 24px 12px 48px; }
+      .card-body, .card-header { padding: 20px 18px; }
+      .form-row { grid-template-columns: 1fr; }
+      .notif-section { flex-direction: column; }
+      .topbar { margin-bottom: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Shell ─────────────────────────────────────────── -->
+<div class="shell">
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-icon">
+        <!-- Lightning bolt icon -->
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10.5 2.25L4.5 10.5H9L7.5 15.75L13.5 7.5H9L10.5 2.25Z" fill="white" stroke="white" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="brand-wordmark">
+        <div class="brand-name">Lead<span>Flow</span></div>
+        <div class="brand-sub">CRM Automation</div>
+      </div>
+    </div>
+    <div class="status-pill">
+      <div class="status-dot"></div>
+      System Online
+    </div>
+  </div>
+
+  <!-- Main Card -->
+  <div class="card">
+    <!-- Top highlight line already via ::before pseudo -->
+
+    <div class="card-header">
+      <div class="card-header-inner">
+        <div class="card-header-text">
+          <div class="card-eyebrow">
+            <div class="card-eyebrow-dot"></div>
+            Lead Intake
+          </div>
+          <h1 class="card-title">Submit New Lead</h1>
+          <p class="card-subtitle">Fill in the contact details below to initiate the automation pipeline — priority assignment, database persistence, and multi-channel notifications.</p>
+        </div>
+        <div class="step-counter" aria-hidden="true">
+          <div class="step-counter-num" id="fieldsFilledCount">0/4</div>
+          <div class="step-counter-label">Fields</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Progress Indicator -->
+    <div class="form-progress-bar" role="progressbar" aria-label="Form completion" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+      <div class="form-progress-fill" id="formProgress"></div>
+    </div>
+
+    <div class="card-body">
+      <form id="leadForm" novalidate>
+
+        <div class="form-section">
+
+          <!-- Row 1: Name + Phone -->
+          <div class="form-row">
+            <!-- Full Name -->
+            <div class="form-group">
+              <label class="form-label" for="name">
+                Full Name <span class="req" aria-hidden="true">*</span>
+              </label>
+              <div class="input-wrap">
+                <input
+                  class="form-input"
+                  type="text"
+                  id="name"
+                  name="name"
+                  placeholder="Priya Sharma"
+                  autocomplete="name"
+                  maxlength="100"
+                  aria-required="true"
+                  aria-describedby="name-error"
+                />
+                <span class="input-icon">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="7" cy="4.5" r="2.5" stroke="currentColor" stroke-width="1.3"/>
+                    <path d="M2 12c0-2.761 2.239-4 5-4s5 1.239 5 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                  </svg>
+                </span>
+              </div>
+              <div class="field-error" id="name-error" role="alert" aria-live="polite">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><circle cx="5.5" cy="5.5" r="5" stroke="currentColor" stroke-width="1.2"/><path d="M5.5 3.5v2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="5.5" cy="8" r="0.6" fill="currentColor"/></svg>
+                <span id="name-error-text"></span>
+              </div>
+            </div>
+
+            <!-- Phone Number -->
+            <div class="form-group" id="phoneGroup">
+              <label class="form-label" for="phone">
+                Phone <span class="req" aria-hidden="true">*</span>
+                <span class="muted-badge" id="phoneMutedBadge" aria-hidden="true">Not used</span>
+              </label>
+              <div class="input-wrap">
+                <input
+                  class="form-input"
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  placeholder="+91 9876543210"
+                  autocomplete="tel"
+                  maxlength="16"
+                  aria-required="true"
+                  aria-describedby="phone-error"
+                />
+                <span class="input-icon">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4.5 2C4.5 2 3 2 2.5 3.5C2 5 2.5 8 5 10.5C7.5 13 10.5 13.5 12 13C13.5 12.5 13 11 13 11L11.5 9.5C11.5 9.5 11 9 10.5 9.5L9.5 10.5C9.5 10.5 8 9.5 6.5 8C5 6.5 4.5 5 4.5 5L5.5 4C6 3.5 5.5 3 5.5 3L4.5 2Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+              </div>
+              <div class="field-error" id="phone-error" role="alert" aria-live="polite">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><circle cx="5.5" cy="5.5" r="5" stroke="currentColor" stroke-width="1.2"/><path d="M5.5 3.5v2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="5.5" cy="8" r="0.6" fill="currentColor"/></svg>
+                <span id="phone-error-text"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="form-group" id="emailGroup">
+            <label class="form-label" for="email">
+              Email Address <span class="req" aria-hidden="true">*</span>
+              <span class="muted-badge" id="emailMutedBadge" aria-hidden="true">Not used</span>
+            </label>
+            <div class="input-wrap">
+              <input
+                class="form-input"
+                type="email"
+                id="email"
+                name="email"
+                placeholder="priya@company.com"
+                autocomplete="email"
+                aria-required="true"
+                aria-describedby="email-error"
+              />
+              <span class="input-icon">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="1.5" y="3" width="11" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+                  <path d="M1.5 4.5L7 8L12.5 4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                </svg>
+              </span>
+            </div>
+            <div class="field-error" id="email-error" role="alert" aria-live="polite">
+              <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><circle cx="5.5" cy="5.5" r="5" stroke="currentColor" stroke-width="1.2"/><path d="M5.5 3.5v2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="5.5" cy="8" r="0.6" fill="currentColor"/></svg>
+              <span id="email-error-text"></span>
+            </div>
+          </div>
+
+          <!-- Lead Source -->
+          <div class="form-group">
+            <label class="form-label" for="source">
+              Lead Source <span class="req" aria-hidden="true">*</span>
+            </label>
+            <div class="input-wrap">
+              <select
+                class="form-select"
+                id="source"
+                name="source"
+                aria-required="true"
+                aria-describedby="source-error"
+              >
+                <option value="" disabled selected>Select acquisition channel</option>
+                <optgroup label="⬆ High Priority">
+                  <option value="hot">Hot Lead</option>
+                  <option value="referral">Referral</option>
+                  <option value="enterprise">Enterprise Inquiry</option>
+                  <option value="vip">VIP</option>
+                  <option value="inbound">Inbound Call</option>
+                </optgroup>
+                <optgroup label="◆ Medium Priority">
+                  <option value="website">Company Website</option>
+                  <option value="google">Google Search</option>
+                  <option value="linkedin">LinkedIn</option>
+                  <option value="facebook">Facebook</option>
+                  <option value="social">Social Media</option>
+                  <option value="organic">Organic</option>
+                </optgroup>
+                <optgroup label="⬇ Low Priority">
+                  <option value="cold">Cold Outreach</option>
+                  <option value="other">Other</option>
+                </optgroup>
+              </select>
+              <span class="input-icon">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M2 4.5L7 2L12 4.5V9.5L7 12L2 9.5V4.5Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+                  <circle cx="7" cy="7" r="1.5" stroke="currentColor" stroke-width="1.3"/>
+                </svg>
+              </span>
+            </div>
+            <div class="field-error" id="source-error" role="alert" aria-live="polite">
+              <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><circle cx="5.5" cy="5.5" r="5" stroke="currentColor" stroke-width="1.2"/><path d="M5.5 3.5v2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="5.5" cy="8" r="0.6" fill="currentColor"/></svg>
+              <span id="source-error-text"></span>
+            </div>
+          </div>
+
+          <!-- Section Divider -->
+          <div class="section-divider">
+            <div class="section-divider-line"></div>
+            <div class="section-divider-text">Notification Routing</div>
+            <div class="section-divider-line"></div>
+          </div>
+
+          <!-- Live Test Mode -->
+          <div class="test-mode-block" id="testModeBlock">
+            <div class="test-mode-header" id="testModeHeader" role="button" aria-expanded="false" aria-controls="testModeFields" tabindex="0">
+              <div class="test-mode-left">
+                <div class="test-mode-icon-wrap">
+                  <!-- Flask / test tube icon -->
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 2V8L2.5 13.5C2.5 13.5 2 14.5 3 14.5H13C14 14.5 13.5 13.5 13.5 13.5L10 8V2" stroke="#818CF8" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M5.5 2H10.5" stroke="#818CF8" stroke-width="1.4" stroke-linecap="round"/>
+                    <circle cx="5.5" cy="11.5" r="0.8" fill="#818CF8"/>
+                    <circle cx="9" cy="12.5" r="0.5" fill="#818CF8"/>
+                  </svg>
+                </div>
+                <div class="test-mode-text">
+                  <div class="test-mode-label">Live Test Mode</div>
+                  <div class="test-mode-desc">Route notifications to your own contact details</div>
+                </div>
+              </div>
+              <label class="toggle" id="toggleLabel" aria-label="Toggle Live Test Mode">
+                <input type="checkbox" id="testModeToggle" />
+                <div class="toggle-track">
+                  <div class="toggle-thumb"></div>
+                </div>
+              </label>
+            </div>
+
+            <!-- Revealed Fields -->
+            <div class="test-mode-fields" id="testModeFields" aria-hidden="true">
+              <div class="test-mode-fields-inner">
+
+                <div class="test-mode-callout">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="7" cy="7" r="6" stroke="#818CF8" stroke-width="1.2"/>
+                    <path d="M7 6v4" stroke="#818CF8" stroke-width="1.3" stroke-linecap="round"/>
+                    <circle cx="7" cy="4.5" r="0.7" fill="#818CF8"/>
+                  </svg>
+                  <div class="test-mode-callout-text">
+                    <strong>Redirecting notifications.</strong> WhatsApp &amp; Email will be sent to you instead of the system's default recipients.
+                  </div>
+                </div>
+
+                <!-- Test Email -->
+                <div class="form-group">
+                  <label class="form-label" for="testEmail">
+                    Your Email <span class="req" aria-hidden="true">*</span>
+                  </label>
+                  <div class="input-wrap">
+                    <input
+                      class="form-input"
+                      type="email"
+                      id="testEmail"
+                      name="testEmail"
+                      placeholder="your@email.com"
+                      autocomplete="email"
+                      aria-describedby="testEmail-error"
+                    />
+                    <span class="input-icon">
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="1.5" y="3" width="11" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+                        <path d="M1.5 4.5L7 8L12.5 4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                      </svg>
+                    </span>
+                  </div>
+                  <div class="field-error" id="testEmail-error" role="alert" aria-live="polite">
+                    <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><circle cx="5.5" cy="5.5" r="5" stroke="currentColor" stroke-width="1.2"/><path d="M5.5 3.5v2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="5.5" cy="8" r="0.6" fill="currentColor"/></svg>
+                    <span id="testEmail-error-text"></span>
+                  </div>
+                </div>
+
+                <!-- Test Phone -->
+                <div class="form-group">
+                  <label class="form-label" for="testPhone">
+                    Your WhatsApp Number <span class="req" aria-hidden="true">*</span>
+                  </label>
+                  <div class="input-wrap">
+                    <input
+                      class="form-input"
+                      type="tel"
+                      id="testPhone"
+                      name="testPhone"
+                      placeholder="+91 9876543210"
+                      autocomplete="tel"
+                      maxlength="16"
+                      aria-describedby="testPhone-error"
+                    />
+                    <span class="input-icon">
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4.5 2C4.5 2 3 2 2.5 3.5C2 5 2.5 8 5 10.5C7.5 13 10.5 13.5 12 13C13.5 12.5 13 11 13 11L11.5 9.5C11.5 9.5 11 9 10.5 9.5L9.5 10.5C9.5 10.5 8 9.5 6.5 8C5 6.5 4.5 5 4.5 5L5.5 4C6 3.5 5.5 3 5.5 3L4.5 2Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+                      </svg>
+                    </span>
+                  </div>
+                  <div class="field-error" id="testPhone-error" role="alert" aria-live="polite">
+                    <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><circle cx="5.5" cy="5.5" r="5" stroke="currentColor" stroke-width="1.2"/><path d="M5.5 3.5v2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="5.5" cy="8" r="0.6" fill="currentColor"/></svg>
+                    <span id="testPhone-error-text"></span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button class="btn-submit" type="submit" id="submitBtn" aria-label="Submit lead">
+            <div class="spinner" id="spinner" aria-hidden="true"></div>
+            <span id="btnText">Submit Lead</span>
+            <svg id="btnArrow" width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 7.5h9M8.5 4l4 3.5-4 3.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+        </div>
+
+        <!-- Workflow Stepper -->
+        <div id="workflowBox">
+          <div class="workflow-card">
+            <div class="workflow-card-header">
+              <div class="workflow-card-title">Automation Pipeline</div>
+              <div class="workflow-processing-badge" id="processingBadge">
+                <div class="workflow-processing-dot"></div>
+                Processing
+              </div>
+            </div>
+            <div class="workflow-steps">
+
+              <div class="step" id="step-1">
+                <div class="step-node">
+                  <span class="step-num">1</span>
+                  <div class="step-ring"></div>
+                  <div class="step-check-icon">
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                      <path d="M2.5 6.5L5.5 9.5L10.5 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                </div>
+                <div class="step-content">
+                  <div class="step-title">Validating Input</div>
+                  <div class="step-detail">Schema verified, fields sanitized</div>
+                  <div class="step-time" id="step-1-time"></div>
+                </div>
+              </div>
+
+              <div class="step" id="step-2">
+                <div class="step-node">
+                  <span class="step-num">2</span>
+                  <div class="step-ring"></div>
+                  <div class="step-check-icon">
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                      <path d="M2.5 6.5L5.5 9.5L10.5 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                </div>
+                <div class="step-content">
+                  <div class="step-title">Assigning Priority</div>
+                  <div class="step-detail">Rule-based classification applied</div>
+                  <div class="step-time" id="step-2-time"></div>
+                </div>
+              </div>
+
+              <div class="step" id="step-3">
+                <div class="step-node">
+                  <span class="step-num">3</span>
+                  <div class="step-ring"></div>
+                  <div class="step-check-icon">
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                      <path d="M2.5 6.5L5.5 9.5L10.5 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                </div>
+                <div class="step-content">
+                  <div class="step-title">Persisting to Database</div>
+                  <div class="step-detail">MongoDB Atlas → lead document saved</div>
+                  <div class="step-time" id="step-3-time"></div>
+                </div>
+              </div>
+
+              <div class="step" id="step-4">
+                <div class="step-node">
+                  <span class="step-num">4</span>
+                  <div class="step-ring"></div>
+                  <div class="step-check-icon">
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                      <path d="M2.5 6.5L5.5 9.5L10.5 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                </div>
+                <div class="step-content">
+                  <div class="step-title">Dispatching Notifications</div>
+                  <div class="step-detail">WhatsApp &amp; Email channels triggered</div>
+                  <div class="step-time" id="step-4-time"></div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Response Box -->
+        <div id="responseBox"></div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <span class="footer-text">Powered by <strong>LeadFlow</strong></span>
+    <div class="footer-sep"></div>
+    <span class="footer-text">Enterprise CRM Automation</span>
+    <div class="footer-sep"></div>
+    <span class="footer-text" id="footerTime"></span>
+  </div>
+
+</div>
+
+<script src="form.js"></script>
+</body>
+</html>

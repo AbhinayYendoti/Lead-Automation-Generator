@@ -1,0 +1,122 @@
+# ═══════════════════════════════════════════════════════════════
+# LeadFlow – .gitignore
+# Node.js / Express / MongoDB production project
+# ═══════════════════════════════════════════════════════════════
+
+# ─── Environment & Secrets ────────────────────────────────────
+.env
+.env.*
+!.env.example
+.env.local
+.env.development
+.env.staging
+.env.production
+*.pem
+*.key
+*.cert
+*.p12
+secrets/
+credentials/
+
+# ─── Dependencies ─────────────────────────────────────────────
+node_modules/
+jspm_packages/
+bower_components/
+
+# ─── Build Artifacts & Compiled Output ────────────────────────
+dist/
+build/
+out/
+.cache/
+*.min.js
+*.min.css
+
+# ─── Logs ─────────────────────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+combined.log
+error.log
+access.log
+
+# ─── Runtime / Process Files ──────────────────────────────────
+pids/
+*.pid
+*.pid.lock
+*.seed
+
+# ─── Coverage & Testing ───────────────────────────────────────
+coverage/
+.nyc_output/
+*.lcov
+test-results/
+junit.xml
+
+# ─── Database Dumps & Backups ────────────────────────────────
+*.sql
+*.sqlite
+*.sqlite3
+*.db
+dump/
+backup/
+*.dump
+
+# ─── Uploads & Temporary Files ───────────────────────────────
+uploads/
+tmp/
+temp/
+*.tmp
+*.swp
+*.bak
+
+# ─── Package Manager Lock Files (keep package-lock.json) ─────
+yarn.lock
+pnpm-lock.yaml
+.pnp
+.pnp.js
+
+# ─── IDEs & Editors ──────────────────────────────────────────
+.vscode/
+.idea/
+*.iml
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+.settings/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# ─── OS Generated Files ──────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ─── Docker ──────────────────────────────────────────────────
+.docker/
+docker-compose.override.yml
+
+# ─── Monitoring & APM ────────────────────────────────────────
+newrelic_agent.log
+.newrelic/
+
+# ─── Miscellaneous ───────────────────────────────────────────
+*.gz
+*.tar
+*.zip
+*.rar
+.eslintcache
+.stylelintcache
+.parcel-cache/
